@@ -4,14 +4,13 @@ Reads CSV from S3 raw zone, transforms, and writes Parquet to processed zone.
 """
 
 import sys
-from awsglue.transforms import *
+from awsglue.transforms import *  # noqa: F403,F405
 from awsglue.utils import getResolvedOptions
 from pyspark.context import SparkContext
 from awsglue.context import GlueContext
 from awsglue.job import Job
 from pyspark.sql import functions as F
-from pyspark.sql.types import *
-from datetime import datetime
+from pyspark.sql.types import *  # noqa: F403,F405
 import logging
 
 # Set up logging
@@ -173,7 +172,7 @@ def main():
         logger.info("Updating Glue Data Catalog")
 
         # Create DynamicFrame for catalog update
-        dynamic_frame = DynamicFrame.fromDF(df_final, glueContext, "dynamic_frame")
+        dynamic_frame = DynamicFrame.fromDF(df_final, glueContext, "dynamic_frame")  # noqa: F405
 
         # Write to catalog
         glueContext.write_dynamic_frame.from_catalog(

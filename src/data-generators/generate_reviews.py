@@ -171,11 +171,11 @@ def main(rows, customers, products, output, date):
     print("Statistics:")
     print(f"  Total reviews: {len(reviews):,}")
     print(f"  Average rating: {avg_rating:.2f}")
-    print(f"  Verified purchases: {verified:,} ({verified/len(reviews)*100:.1f}%)")
-    print(f"  Rating distribution:")
+    print(f"  Verified purchases: {verified:,} ({verified / len(reviews) * 100:.1f}%)")
+    print("  Rating distribution:")
     for rating in sorted(rating_dist.keys()):
         count = rating_dist[rating]
-        print(f"    {rating} stars: {count:,} ({count/len(reviews)*100:.1f}%)")
+        print(f"    {rating} stars: {count:,} ({count / len(reviews) * 100:.1f}%)")
     print(f"  File size: {output_path.stat().st_size / 1024:.2f} KB")
 
 

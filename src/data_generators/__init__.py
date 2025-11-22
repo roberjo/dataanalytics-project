@@ -15,10 +15,10 @@ if _module_dir not in sys.path:
     sys.path.insert(0, _module_dir)
 
 # Import generator classes
-from generate_transactions import TransactionGenerator
-from generate_products import ProductGenerator
-from generate_clickstream import ClickstreamGenerator
-from generate_reviews import ReviewGenerator
+from generate_transactions import TransactionGenerator  # noqa: E402
+from generate_products import ProductGenerator  # noqa: E402
+from generate_clickstream import ClickstreamGenerator  # noqa: E402
+from generate_reviews import ReviewGenerator  # noqa: E402
 
 __all__ = [
     "TransactionGenerator",

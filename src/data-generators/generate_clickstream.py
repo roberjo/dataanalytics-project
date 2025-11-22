@@ -61,7 +61,7 @@ class ClickstreamGenerator:
         browser = random.choice(self.BROWSERS)
 
         # Session duration: 1-30 minutes
-        session_duration = random.randint(60, 1800)
+        # session_duration = random.randint(60, 1800)  # noqa: F841
         num_events = random.randint(3, 20)
 
         # Start with a page view
@@ -205,12 +205,12 @@ def main(rows, customers, products, output, date):
     print()
     print("Statistics:")
     print(f"  Total events: {len(events):,}")
-    print(f"  Event types:")
+    print("  Event types:")
     for et, count in sorted(event_types.items(), key=lambda x: x[1], reverse=True):
-        print(f"    {et}: {count:,} ({count/len(events)*100:.1f}%)")
-    print(f"  Devices:")
+        print(f"    {et}: {count:,} ({count / len(events) * 100:.1f}%)")
+    print("  Devices:")
     for dev, count in sorted(devices.items(), key=lambda x: x[1], reverse=True):
-        print(f"    {dev}: {count:,} ({count/len(events)*100:.1f}%)")
+        print(f"    {dev}: {count:,} ({count / len(events) * 100:.1f}%)")
     print(f"  File size: {output_path.stat().st_size / 1024 / 1024:.2f} MB")
 
 

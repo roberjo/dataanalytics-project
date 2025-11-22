@@ -1,6 +1,6 @@
 import json
 import boto3
-from datetime import datetime, timedelta
+from datetime import datetime
 import logging
 from typing import Dict, List
 
@@ -117,7 +117,7 @@ class DataQualityChecker:
         try:
             for column in columns:
                 query = f"""
-                    SELECT 
+                    SELECT
                         COUNT(*) as total,
                         SUM(CASE WHEN {column} IS NULL THEN 1 ELSE 0 END) as nulls
                     FROM {table_name}
@@ -135,7 +135,10 @@ class DataQualityChecker:
                     self.checks_failed.append(
                         {
                             "check": f"{check_name} - {column}",
-                            "reason": f"Null percentage {null_pct:.2%} exceeds threshold {max_null_pct:.2%}",
+                            "reason": (
+                                f"Null percentage {null_pct:.2%} exceeds "
+                                f"threshold {max_null_pct:.2%}"
+                            ),
                         }
                     )
                     all_passed = False

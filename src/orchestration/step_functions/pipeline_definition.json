@@ -1,0 +1,233 @@
+{
+  "Comment": "E-commerce Data Analytics Pipeline",
+  "StartAt": "ValidateFiles",
+  "States": {
+    "ValidateFiles": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${file_validator_function_arn}",
+        "Payload": {
+          "bucket.$": "$.bucket",
+          "key.$": "$.key"
+        }
+      },
+      "ResultPath": "$.validation_result",
+      "Next": "CheckValidation",
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "SendFailureNotification",
+          "ResultPath": "$.error"
+        }
+      ]
+    },
+    
+    "CheckValidation": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.validation_result.Payload.validation_result.valid",
+          "BooleanEquals": true,
+          "Next": "RunCrawlers"
+        }
+      ],
+      "Default": "SendFailureNotification"
+    },
+    
+    "RunCrawlers": {
+      "Type": "Parallel",
+      "Next": "ETLJobs",
+      "Branches": [
+        {
+          "StartAt": "CrawlTransactions",
+          "States": {
+            "CrawlTransactions": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+              "Parameters": {
+                "Name": "${transactions_crawler_name}"
+              },
+              "End": true,
+              "Catch": [
+                {
+                  "ErrorEquals": ["Glue.CrawlerRunningException"],
+                  "Next": "WaitForTransactionsCrawler"
+                }
+              ]
+            },
+            "WaitForTransactionsCrawler": {
+              "Type": "Wait",
+              "Seconds": 30,
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "CrawlProducts",
+          "States": {
+            "CrawlProducts": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+              "Parameters": {
+                "Name": "${products_crawler_name}"
+              },
+              "End": true,
+              "Catch": [
+                {
+                  "ErrorEquals": ["Glue.CrawlerRunningException"],
+                  "Next": "WaitForProductsCrawler"
+                }
+              ]
+            },
+            "WaitForProductsCrawler": {
+              "Type": "Wait",
+              "Seconds": 30,
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "CrawlClickstream",
+          "States": {
+            "CrawlClickstream": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+              "Parameters": {
+                "Name": "${clickstream_crawler_name}"
+              },
+              "End": true,
+              "Catch": [
+                {
+                  "ErrorEquals": ["Glue.CrawlerRunningException"],
+                  "Next": "WaitForClickstreamCrawler"
+                }
+              ]
+            },
+            "WaitForClickstreamCrawler": {
+              "Type": "Wait",
+              "Seconds": 30,
+              "End": true
+            }
+          }
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "SendFailureNotification",
+          "ResultPath": "$.error"
+        }
+      ]
+    },
+    
+    "ETLJobs": {
+      "Type": "Parallel",
+      "Next": "DataQualityChecks",
+      "Branches": [
+        {
+          "StartAt": "TransformTransactions",
+          "States": {
+            "TransformTransactions": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "${transaction_etl_job_name}"
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "EnrichProducts",
+          "States": {
+            "EnrichProducts": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "${product_enrichment_job_name}"
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "AggregateClickstream",
+          "States": {
+            "AggregateClickstream": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "${clickstream_aggregation_job_name}"
+              },
+              "End": true
+            }
+          }
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "SendFailureNotification",
+          "ResultPath": "$.error"
+        }
+      ]
+    },
+    
+    "DataQualityChecks": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${data_quality_function_arn}",
+        "Payload": {
+          "database": "${database_name}",
+          "output_location": "${athena_output_location}",
+          "sns_topic_arn": "${sns_topic_arn}"
+        }
+      },
+      "ResultPath": "$.quality_check_result",
+      "Next": "CheckDataQuality",
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "SendFailureNotification",
+          "ResultPath": "$.error"
+        }
+      ]
+    },
+    
+    "CheckDataQuality": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.quality_check_result.Payload.quality_check_result.all_passed",
+          "BooleanEquals": true,
+          "Next": "SendSuccessNotification"
+        }
+      ],
+      "Default": "SendFailureNotification"
+    },
+    
+    "SendSuccessNotification": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sns:publish",
+      "Parameters": {
+        "TopicArn": "${sns_topic_arn}",
+        "Subject": "Data Pipeline Success",
+        "Message.$": "States.Format('Data pipeline completed successfully at {}', $$.State.EnteredTime)"
+      },
+      "End": true
+    },
+    
+    "SendFailureNotification": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sns:publish",
+      "Parameters": {
+        "TopicArn": "${sns_topic_arn}",
+        "Subject": "Data Pipeline Failure",
+        "Message.$": "States.Format('Data pipeline failed: {}', $.error)"
+      },
+      "End": true
+    }
+  }
+}

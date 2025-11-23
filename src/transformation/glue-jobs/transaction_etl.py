@@ -166,24 +166,7 @@ def main():
             target_path, compression="snappy"
         )
 
-        logger.info(f"Successfully wrote {df_final.count()} records")
 
-        # Update Glue Data Catalog
-        logger.info("Updating Glue Data Catalog")
-
-        # Create DynamicFrame for catalog update
-        dynamic_frame = DynamicFrame.fromDF(
-            df_final, glueContext, "dynamic_frame"
-        )  # noqa: F405
-
-
-        # Write to catalog
-        glueContext.write_dynamic_frame.from_catalog(
-            frame=dynamic_frame,
-            database=args["DATABASE_NAME"],
-            table_name=args["TABLE_NAME"],
-            transformation_ctx="write_to_catalog",
-        )
 
         # Print summary statistics
         logger.info("=== Summary Statistics ===")

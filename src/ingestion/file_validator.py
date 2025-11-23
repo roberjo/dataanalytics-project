@@ -227,7 +227,7 @@ class FileValidator:
                     if missing_fields:
                         result["valid"] = False
                         result["errors"].append(
-                            f"Line {i+1}: Missing required fields: {missing_fields}"
+                            f"Line {i + 1}: Missing required fields: {missing_fields}"
                         )
                         break
 
@@ -235,7 +235,7 @@ class FileValidator:
 
                 except json.JSONDecodeError as e:
                     result["valid"] = False
-                    result["errors"].append(f"Line {i+1}: Invalid JSON: {str(e)}")
+                    result["errors"].append(f"Line {i + 1}: Invalid JSON: {str(e)}")
                     break
 
         except Exception as e:

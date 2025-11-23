@@ -4,13 +4,14 @@ Reads CSV from S3 raw zone, transforms, and writes Parquet to processed zone.
 """
 
 import sys
-from awsglue.transforms import *  # noqa: F403,F405
 from awsglue.utils import getResolvedOptions
+
+# from awsglue.transforms import *  # noqa: F403,F405  # Unused import removed
 from pyspark.context import SparkContext
 from awsglue.context import GlueContext
 from awsglue.job import Job
 from pyspark.sql import functions as F
-from pyspark.sql.types import *  # noqa: F403,F405
+from pyspark.sql.types import IntegerType, DecimalType
 import logging
 
 # Set up logging

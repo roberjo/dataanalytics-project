@@ -166,8 +166,6 @@ def main():
             target_path, compression="snappy"
         )
 
-
-
         # Print summary statistics
         logger.info("=== Summary Statistics ===")
         logger.info(f"Total transactions processed: {df_final.count()}")

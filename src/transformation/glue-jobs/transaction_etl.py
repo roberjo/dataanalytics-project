@@ -172,9 +172,7 @@ def main():
         logger.info("Updating Glue Data Catalog")
 
         # Create DynamicFrame for catalog update
-        dynamic_frame = DynamicFrame.fromDF(
-            df_final, glueContext, "dynamic_frame"
-        )  # noqa: F405
+        dynamic_frame = DynamicFrame.fromDF(df_final, glueContext, "dynamic_frame")  # noqa: F405  # noqa: F405
 
         # Write to catalog
         glueContext.write_dynamic_frame.from_catalog(

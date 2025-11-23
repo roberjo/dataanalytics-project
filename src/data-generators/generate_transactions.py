@@ -143,7 +143,7 @@ def main(rows, customers, products, output, date):
     print(f"  Total transactions: {len(transactions):,}")
     print(f"  Total revenue: ${total_revenue:,.2f}")
     print(f"  Completed revenue: ${completed_revenue:,.2f}")
-    print(f"  Average order value: ${total_revenue/len(transactions):.2f}")
+    print(f"  Average order value: ${total_revenue / len(transactions):.2f}")
     print(f"  File size: {output_path.stat().st_size / 1024 / 1024:.2f} MB")
 
 
